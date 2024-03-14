@@ -12,6 +12,7 @@ const io = socketIo(server, {
 });
 
 let interval;
+let connectionTime;
 
 // Serve HTML file
 app.get('/', (req, res) => {
@@ -22,8 +23,18 @@ app.get('/', (req, res) => {
 // WebSocket connection
 io.on('connection', (socket) => {
   console.log('Client connected');
+  connectionTime = new Date();
 
-  // Define event handlers or send initial data to the client if needed
+  // Send biometric verification result every 5 seconds
+  interval = setInterval(() => {
+    sendBiometricResult(socket);
+  }, 5000);
+
+  // Close WebSocket connection after 5 minutes
+  setTimeout(() => {
+    socket.disconnect();
+    console.log('WebSocket connection closed after 5 minutes.');
+  }, 300000); // 5 minutes in milliseconds
 });
 
 // Handle biometric verification and send result over WebSocket
@@ -33,16 +44,13 @@ const biometricVerification = () => {
   return isVerified;
 };
 
-const sendBiometricResult = () => {
+const sendBiometricResult = (socket) => {
   const isVerified = biometricVerification();
-  io.emit('biometricResult', isVerified ? 'Biometric verification successful' : 'Biometric verification failed');
+  socket.emit('biometricResult', isVerified ? 'Biometric verification successful' : 'Biometric verification failed');
 };
 
 // Cloud Function logic
 function biometricVerificationCloudFunction(req, res) {
-  // Send biometric verification result to client every 5 seconds
-  interval = setInterval(sendBiometricResult, 5000);
-
   // Construct the JSON response
   const isVerified = biometricVerification();
   const jsonResponse = {
