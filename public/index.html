@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biometric Verification Status</title>
+</head>
+<body>
+  <h1>Biometric Verification Status:</h1>
+  <div id="verificationStatus"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+  <script>
+    const socket = io(); // Connect to the Socket.IO server
+
+    socket.on('biometricResult', (data) => {
+      const verificationStatus = document.getElementById('verificationStatus');
+      const message = document.createElement('p');
+      message.textContent = data;
+      verificationStatus.appendChild(message);
+    });
+  </script>
+</body>
+</html>
